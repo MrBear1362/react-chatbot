@@ -1,11 +1,30 @@
 import { Outlet } from "react-router";
 
+// Nye sidebarHeader component
 function SidebarHeader() {
   return (
     <div className="sidebar-header">
       <h2 className="chatbot-title">Chatbot</h2>
       <a href="/chat/new" className="new-chat-btn">
         + New
+      </a>
+    </div>
+  );
+}
+
+// Nye sidebarFooter component
+function SidebarFooter() {
+  return (
+    <div className="sidebar-footer">
+      <a href="/profile" className="user-profile">
+        <img
+          src="https://ui-avatars.com/api/?name=Batman&background=0D0D0D&color=fff&size=40"
+          alt="User avatar"
+          className="user-avatar"
+          width={30}
+          height={30}
+        />
+        <span className="user-name">Batman</span>
       </a>
     </div>
   );
@@ -109,19 +128,8 @@ function Sidebar() {
           </li>
         </ul>
       </nav>
-      {/* Sidebar footer */}
-      <div className="sidebar-footer">
-        <a href="/profile" className="user-profile">
-          <img
-            src="https://ui-avatars.com/api/?name=Batman&background=0D0D0D&color=fff&size=40"
-            alt="User avatar"
-            className="user-avatar"
-            width={30}
-            height={30}
-          />
-          <span className="user-name">Batman</span>
-        </a>
-      </div>
+      {/* Using our extracted SidebarFooter component */}
+      <SidebarFooter />
     </aside>
   );
 }
