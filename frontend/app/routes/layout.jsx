@@ -30,7 +30,7 @@ function SidebarFooter() {
   );
 }
 
-function ChatThreadsItem(props) {
+function ChatThreadItem(props) {
   return (
     <li className="chat-thread-item">
       <a href={props.href} className="chat-thread-link">
