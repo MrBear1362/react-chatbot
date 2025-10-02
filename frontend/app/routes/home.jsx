@@ -59,24 +59,30 @@ function ChatMessages() {
   );
 }
 
+function ChatInput() {
+  return (
+    <div className="chat-input-container">
+      <div className="chat-input-wrapper">
+        <textarea
+          className="chat-input"
+          placeholder="Type your message here..."
+          rows="1"
+        />
+        <button className="send-button" type="button">
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <main className="chat-container">
       {/* Using our reusable Message component with different props */}
       <ChatMessages />
       {/* Chat input area */}
-      <div className="chat-input-container">
-        <div className="chat-input-wrapper">
-          <textarea
-            className="chat-input"
-            placeholder="Type your message here..."
-            rows="1"
-          />
-          <button className="send-button" type="button">
-            Send
-          </button>
-        </div>
-      </div>
+      <ChatInput />
     </main>
   );
 }
