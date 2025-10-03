@@ -28,19 +28,15 @@ function SidebarFooter() {
   );
 }
 
-function ChatThreadItem({ thread }) {
+function ChatThreadItem({ thread, onDeleteThread }) {
   const { id, href, title } = thread;
 
   const handleDeleteClick = (event) => {
     event.stopPropagation();
 
-    console.log("Delete button clicked for thread", {
-      id: id,
-      title: title,
-      href: href,
-      element: event.target,
-      timestamp: new Date().toISOString(),
-    });
+    if (onDeleteThread) {
+      onDeleteThread(id);
+    }
   };
 
   return (
@@ -64,13 +60,17 @@ function ChatThreadItem({ thread }) {
 }
 
 //Component til listen af chat-tråde
-function ChatThreadsList({ threads = [] }) {
+function ChatThreadsList({ threads = [], onDeleteThread }) {
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
       <ul>
         {/* Using .map() to render each thread - consistent with messages pattern! */}
         {threads.map((thread) => (
-          <ChatThreadItem key={thread.id} thread={thread} />
+          <ChatThreadItem
+            key={thread.id}
+            thread={thread}
+            onDeleteThread={onDeleteThread}
+          />
         ))}
       </ul>
     </nav>
@@ -78,12 +78,12 @@ function ChatThreadsList({ threads = [] }) {
 }
 
 // Nye sidebar component
-export default function Sidebar({ threads }) {
+export default function Sidebar({ threads, onDeleteThread }) {
   return (
     <aside className="sidebar">
       <SidebarHeader />
       {/* Chat threads list */}
-      <ChatThreadsList threads={threads} />
+      <ChatThreadsList threads={threads} onDeleteThread={onDeleteThread} />
       {/* Using our extracted SidebarFooter component */}
       <SidebarFooter />
     </aside>

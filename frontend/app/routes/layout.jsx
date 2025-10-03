@@ -1,8 +1,9 @@
 import { Outlet } from "react-router";
+import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 
 // Static array of thread data - replaces hardcoded ChatThreadItem components
-const threads = [
+const initialThreads = [
   {
     id: 1,
     href: "/chat/how-to-learn-programming",
@@ -69,9 +70,19 @@ const threads = [
 
 // Layout er nu blevet mere simpel
 export default function Layout() {
+  const [threads, setThreads] = useState(initialThreads);
+
+  const deleteThread = (threadID) => {
+    console.log("Layout: Deleting threads with ID:", threadID);
+
+    setThreads((currentThreads) =>
+      currentThreads.filter((thread) => thread.id !== threadID),
+    );
+  };
+
   return (
     <div className="app-layout">
-      <Sidebar threads={threads} />
+      <Sidebar threads={threads} onDeleteThread={deleteThread} />
       <main className="main-content">
         <Outlet />
       </main>
