@@ -28,28 +28,49 @@ function SidebarFooter() {
   );
 }
 
-function ChatThreadItem(props) {
+function ChatThreadItem({ thread }) {
+  const { id, href, title } = thread;
+
+  const handleDeleteClick = (event) => {
+    event.stopPropagation();
+
+    console.log("Delete button clicked for thread", {
+      id: id,
+      title: title,
+      href: href,
+      element: event.target,
+      timestamp: new Date().toISOString(),
+    });
+  };
+
   return (
     <li className="chat-thread-item">
-      <a href={props.href} className="chat-thread-link">
-        {props.title}
-      </a>
+      <div className="chat-thread-item-content">
+        <a href={href} className="chat-thread-link">
+          {title}
+        </a>
+        <button
+          className="delete-thread-btn"
+          aria-label={`Delete thread: ${title}`}
+          title="Delete this conversation"
+          type="button"
+          onClick={handleDeleteClick}
+        >
+          &times;
+        </button>
+      </div>
     </li>
   );
 }
 
 //Component til listen af chat-tråde
-function ChatThreadsList(props) {
+function ChatThreadsList({ threads = [] }) {
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
       <ul>
         {/* Using .map() to render each thread - consistent with messages pattern! */}
-        {props.threads.map((thread) => (
-          <ChatThreadItem
-            key={thread.id}
-            href={thread.href}
-            title={thread.title}
-          />
+        {threads.map((thread) => (
+          <ChatThreadItem key={thread.id} thread={thread} />
         ))}
       </ul>
     </nav>
@@ -57,12 +78,12 @@ function ChatThreadsList(props) {
 }
 
 // Nye sidebar component
-export default function Sidebar(props) {
+export default function Sidebar({ threads }) {
   return (
     <aside className="sidebar">
       <SidebarHeader />
       {/* Chat threads list */}
-      <ChatThreadsList threads={props.threads} />
+      <ChatThreadsList threads={threads} />
       {/* Using our extracted SidebarFooter component */}
       <SidebarFooter />
     </aside>
