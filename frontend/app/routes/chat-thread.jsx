@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router";
 import { ChatInput, ChatMessages } from "../components/Chat";
 
 const defaultMessages = [
@@ -15,6 +16,8 @@ const defaultMessages = [
 ];
 
 export default function ChatThread() {
+  const { threadId } = useParams();
+
   const [messages, setMessages] = useState(defaultMessages);
 
   const addMessage = (content) => {
@@ -29,6 +32,9 @@ export default function ChatThread() {
 
   return (
     <main className="chat-container">
+      <div className="chat-thread-header">
+        <h2>Conversation Thread #{threadId}</h2>
+      </div>
       <ChatMessages messages={messages} />
       <ChatInput onAddMessage={addMessage} />
     </main>
