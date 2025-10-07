@@ -1,4 +1,22 @@
-// Nye sidebarHeader component
+import React from "react";
+
+/**
+ * Sidebar Components
+ *
+ * This file demonstrates React component organization and modularity:
+ * 1. Multiple related components in one file
+ * 2. Import/export patterns for sharing components
+ * 3. Component composition and hierarchy
+ * 4. File organization for better project structure
+ * 5. CONTROLLED COMPONENTS: Components that manage form input state
+ */
+
+/**
+ * SidebarHeader Component
+ *
+ * Handles the top section of the sidebar with title and new chat button.
+ * This component demonstrates single responsibility and reusability.
+ */
 function SidebarHeader() {
   return (
     <div className="sidebar-header">
@@ -10,30 +28,24 @@ function SidebarHeader() {
   );
 }
 
-// Nye sidebarFooter component
-function SidebarFooter() {
-  return (
-    <div className="sidebar-footer">
-      <a href="/profile" className="user-profile">
-        <img
-          src="https://ui-avatars.com/api/?name=Batman&background=0D0D0D&color=fff&size=40"
-          alt="User avatar"
-          className="user-avatar"
-          width={30}
-          height={30}
-        />
-        <span className="user-name">Batman</span>
-      </a>
-    </div>
-  );
-}
-
+/**
+ * ChatThreadItem Component
+ *
+ * Now uses CALLBACK FUNCTIONS for state updates! Key concepts:
+ * 1. DESTRUCTURING: Extract thread data and callback function
+ * 2. CALLBACK INVOCATION: Call parent function to trigger state updates
+ * 3. EVENT HANDLING: Still handle click events but now trigger real actions
+ * 4. STATE LIFTING: Component doesn't manage state, just triggers updates
+ * 5. UNIDIRECTIONAL DATA FLOW: Data flows down, events flow up
+ */
 function ChatThreadItem({ thread, onDeleteThread }) {
   const { id, href, title } = thread;
 
   const handleDeleteClick = (event) => {
+    // Prevent the click from bubbling up to parent elements
     event.stopPropagation();
 
+    // Call the callback function passed from parent to delete the thread
     if (onDeleteThread) {
       onDeleteThread(id);
     }
@@ -59,13 +71,48 @@ function ChatThreadItem({ thread, onDeleteThread }) {
   );
 }
 
-//Component til listen af chat-tråde
+/**
+ * ChatThreadsList Component
+ *
+ * Now demonstrates CONTROLLED COMPONENTS and COMPUTED STATE! Key concepts:
+ * 1. CONTROLLED COMPONENTS: Input value managed by React state
+ * 2. COMPUTED STATE: Filtering data without additional useState
+ * 3. ARRAY METHODS: Using filter() to transform data
+ * 4. LOCAL STATE: Managing search input with useState
+ * 5. CASE-INSENSITIVE SEARCH: Using toLowerCase() for better UX
+ * 6. REAL-TIME FILTERING: Updates as user types
+ */
 function ChatThreadsList({ threads = [], onDeleteThread }) {
+  // LOCAL STATE: Managing search input value (controlled component)
+  const [searchValue, setSearchValue] = React.useState("");
+
+  // EVENT HANDLER: Update search value as user types
+  const handleSearchChange = (event) => {
+    setSearchValue(event.target.value);
+  };
+
+  // COMPUTED STATE: Filter threads based on search value
+  // This is NOT stored in state - it's computed on every render
+  const filteredThreads = threads.filter((thread) =>
+    thread.title.toLowerCase().includes(searchValue.toLowerCase()),
+  );
+
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
+      {/* Search input - CONTROLLED COMPONENT */}
+      <div className="search-container">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search conversations..."
+          value={searchValue}
+          onChange={handleSearchChange}
+        />
+      </div>
+
       <ul>
-        {/* Using .map() to render each thread - consistent with messages pattern! */}
-        {threads.map((thread) => (
+        {/* Render filtered threads instead of all threads */}
+        {filteredThreads.map((thread) => (
           <ChatThreadItem
             key={thread.id}
             thread={thread}
@@ -77,14 +124,45 @@ function ChatThreadsList({ threads = [], onDeleteThread }) {
   );
 }
 
-// Nye sidebar component
+/**
+ * SidebarFooter Component
+ *
+ * Handles the user profile section at the bottom of the sidebar.
+ * Demonstrates component modularity and independence.
+ */
+function SidebarFooter() {
+  return (
+    <div className="sidebar-footer">
+      <a href="/profile" className="user-profile">
+        <img
+          src="https://ui-avatars.com/api/?name=Batman&background=0D0D0D&color=fff&size=40"
+          alt="User avatar"
+          className="user-avatar"
+          width={30}
+          height={30}
+        />
+        <span className="user-name">Batman</span>
+      </a>
+    </div>
+  );
+}
+
+/**
+ * Main Sidebar Component
+ *
+ * Now handles CALLBACK PROP DRILLING! Key concepts:
+ * 1. DESTRUCTURING: Extract both data and callback functions
+ * 2. CALLBACK DRILLING: Pass functions down through component hierarchy
+ * 3. INTERMEDIATE COMPONENT: Forwards callbacks without using them directly
+ * 4. SEPARATION OF CONCERNS: Sidebar doesn't handle delete logic
+ * 5. PROP FORWARDING: Clean pattern for passing props to children
+ */
 export default function Sidebar({ threads, onDeleteThread }) {
   return (
     <aside className="sidebar">
+      {/* Component composition with both data and callback drilling */}
       <SidebarHeader />
-      {/* Chat threads list */}
       <ChatThreadsList threads={threads} onDeleteThread={onDeleteThread} />
-      {/* Using our extracted SidebarFooter component */}
       <SidebarFooter />
     </aside>
   );
