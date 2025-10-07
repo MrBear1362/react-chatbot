@@ -1,4 +1,5 @@
 import React from "react";
+import { href, Link } from "react-router";
 
 /**
  * Sidebar Components
@@ -21,9 +22,9 @@ function SidebarHeader() {
   return (
     <div className="sidebar-header">
       <h2 className="chatbot-title">Chatbot</h2>
-      <a href="/chat/new" className="new-chat-btn">
+      <Link to="/chat/new" className="new-chat-btn">
         + New
-      </a>
+      </Link>
     </div>
   );
 }
@@ -39,7 +40,7 @@ function SidebarHeader() {
  * 5. UNIDIRECTIONAL DATA FLOW: Data flows down, events flow up
  */
 function ChatThreadItem({ thread, onDeleteThread }) {
-  const { id, href, title } = thread;
+  const { id, title } = thread;
 
   const handleDeleteClick = (event) => {
     // Prevent the click from bubbling up to parent elements
@@ -54,9 +55,12 @@ function ChatThreadItem({ thread, onDeleteThread }) {
   return (
     <li className="chat-thread-item">
       <div className="chat-thread-item-content">
-        <a href={href} className="chat-thread-link">
+        <Link
+          to={href("/chat/:threadId", { threadId: id })}
+          className="chat-thread-link"
+        >
           {title}
-        </a>
+        </Link>
         <button
           className="delete-thread-btn"
           aria-label={`Delete thread: ${title}`}
