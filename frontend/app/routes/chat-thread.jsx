@@ -1,6 +1,33 @@
 import { useLoaderData } from "react-router";
 import { ChatInput, ChatMessages } from "../components/Chat";
 
+export async function clientAction({ params, request }) {
+  const formData = await request.formData();
+  const content = formData.get("message");
+
+  const newMessage = {
+    thread_id: params.threadId,
+    type: "user",
+    content: content,
+  };
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newMessage),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create message: ${response.status}`);
+  }
+
+  return { success: true };
+}
+
 export async function clientLoader({ params }) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -49,18 +76,13 @@ export async function clientLoader({ params }) {
 export default function ChatThread() {
   const { thread, messages } = useLoaderData();
 
-  const addMessage = (content) => {
-    console.log("Message sent:", content);
-    console.log("(Data mutations will be implemented in the next phase)");
-  };
-
   return (
     <main className="chat-container">
       <div className="chat-thread-header">
         <h2>Conversation Thread #{thread.title}</h2>
       </div>
       <ChatMessages messages={messages} />
-      <ChatInput onAddMessage={addMessage} />
+      <ChatInput />
     </main>
   );
 }
