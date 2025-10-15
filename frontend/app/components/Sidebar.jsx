@@ -1,5 +1,5 @@
 import React from "react";
-import { href, Link, NavLink } from "react-router";
+import { href, Link, NavLink, useFetcher } from "react-router";
 
 /**
  * Sidebar Components
@@ -41,18 +41,12 @@ function SidebarHeader() {
  * 6. NAVLINK COMPONENT: Automatically adds 'active' class when route matches
  * 7. ACTIVE STYLING: Uses className callback to apply styles based on isActive
  */
-function ChatThreadItem({ thread, onDeleteThread }) {
+function ChatThreadItem({ thread }) {
   const { id, title } = thread;
+  const fetcher = useFetcher();
 
-  const handleDeleteClick = (event) => {
-    // Prevent the click from bubbling up to parent elements
-    event.stopPropagation();
-
-    // Call the callback function passed from parent to delete the thread
-    if (onDeleteThread) {
-      onDeleteThread(id);
-    }
-  };
+  const isDeleting =
+    fetcher.state !== "idle" && fetcher.formData?.get("threadId") === id;
 
   return (
     <li className="chat-thread-item">
@@ -71,15 +65,19 @@ function ChatThreadItem({ thread, onDeleteThread }) {
         >
           {title}
         </NavLink>
-        <button
-          className="delete-thread-btn"
-          aria-label={`Delete thread: ${title}`}
-          title="Delete this conversation"
-          type="button"
-          onClick={handleDeleteClick}
-        >
-          &times;
-        </button>
+        <fetcher.Form method="post">
+          <input type="hidden" name="intent" value="delete" />
+          <input type="hidden" name="threadId" value={id} />
+          <button
+            className="delete-thread-btn"
+            aria-label={`Delete thread: ${title}`}
+            title="Delete this conservation"
+            type="submit"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "..." : "x"}
+          </button>
+        </fetcher.Form>
       </div>
     </li>
   );
@@ -96,7 +94,7 @@ function ChatThreadItem({ thread, onDeleteThread }) {
  * 5. CASE-INSENSITIVE SEARCH: Using toLowerCase() for better UX
  * 6. REAL-TIME FILTERING: Updates as user types
  */
-function ChatThreadsList({ threads = [], onDeleteThread }) {
+function ChatThreadsList({ threads = [] }) {
   // LOCAL STATE: Managing search input value (controlled component)
   const [searchValue, setSearchValue] = React.useState("");
 
@@ -127,11 +125,7 @@ function ChatThreadsList({ threads = [], onDeleteThread }) {
       <ul>
         {/* Render filtered threads instead of all threads */}
         {filteredThreads.map((thread) => (
-          <ChatThreadItem
-            key={thread.id}
-            thread={thread}
-            onDeleteThread={onDeleteThread}
-          />
+          <ChatThreadItem key={thread.id} thread={thread} />
         ))}
       </ul>
     </nav>
@@ -171,12 +165,12 @@ function SidebarFooter() {
  * 4. SEPARATION OF CONCERNS: Sidebar doesn't handle delete logic
  * 5. PROP FORWARDING: Clean pattern for passing props to children
  */
-export default function Sidebar({ threads, onDeleteThread }) {
+export default function Sidebar({ threads }) {
   return (
     <aside className="sidebar">
       {/* Component composition with both data and callback drilling */}
       <SidebarHeader />
-      <ChatThreadsList threads={threads} onDeleteThread={onDeleteThread} />
+      <ChatThreadsList threads={threads} />
       <SidebarFooter />
     </aside>
   );
