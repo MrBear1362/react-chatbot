@@ -1,5 +1,34 @@
-import { useLoaderData, useActionData } from "react-router";
+import {
+  useLoaderData,
+  useActionData,
+  Link,
+  useRouteError,
+  href,
+} from "react-router";
 import { ChatInput, ChatMessages } from "../components/Chat";
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  // Check if this is a 404 error (thread not found)
+  const isNotFound = error?.status === 404;
+
+  return (
+    <div className="chat-container">
+      <div className="chat-thread-header">
+        <h2>{isNotFound ? "Thread Not Found" : "Something Went Wrong"}</h2>
+        <p>
+          {isNotFound
+            ? "This conversation may have been deleted or never existed."
+            : error?.message || "An unexpected error occurred."}
+        </p>
+        <p>
+          <Link to={href("/chat/new")}>Start a new chat</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export async function clientAction({ params, request }) {
   const formData = await request.formData();
