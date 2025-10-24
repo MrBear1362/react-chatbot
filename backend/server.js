@@ -231,6 +231,53 @@ app.post("/api/threads/:id/messages", async (req, res) => {
   }
 });
 
+app.post("/api/threads", async (req, res) => {
+  try {
+    const { title, content } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).sjon({
+        error: "Both 'title' and 'content' are required",
+      });
+    }
+
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length === 0) {
+      return res.status(400).json({
+        error: "Title cannot be empty",
+      });
+    }
+
+    const trimmedContent = content.trim();
+    if (trimmedContent.length === 0) {
+      error: "Content cannot be empty.... duh!";
+    }
+
+    const threads = await sql`
+    INSERT INTO threads (title)
+    VALUES (${trimmedTitle})
+    RETURNING id, title, created_at
+    `;
+
+    const thread = threads[0];
+
+    const messages = await sql`
+    INSERT INTO messages (thread_id, type, content)
+    VALUES (${thread.id}, 'user', ${trimmedContent})
+    RETURNING id, thread_id, content, created_at`;
+
+    res.status(201).json({
+      thread: thread,
+      message: messages[0],
+    });
+  } catch (error) {
+    console.error("Creating thread failure D:", error);
+    res.status(500).json({
+      error: "Failure during creation of thread",
+    });
+  }
+});
+
 // ========== DELETE an existing thread ========== //
 // DELETE /api/threads/:id - Delete a thread by ID
 app.delete("/api/threads/:id", async (req, res) => {
