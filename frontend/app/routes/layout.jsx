@@ -4,12 +4,12 @@ import Sidebar from "../components/Sidebar.jsx";
 /**
  * CLIENT LOADER FUNCTION
  *
- * Loads the list of chat threads before the layout renders.
+ * Fetches the list of chat threads from our custom API before the layout renders.
  * Key concepts:
  * 1. PARENT ROUTE LOADER: Runs before any child route loaders
  * 2. SHARED DATA: Data is available to this component and can be accessed by children
- * 3. SIMULATED API CALL: We add a delay to mimic fetching from a database
- * 4. MOCK DATA: Returns static data that will later come from Supabase
+ * 3. CUSTOM API: Direct HTTP calls to our Express API server
+ * 4. ENVIRONMENT VARIABLES: Secure way to store API endpoint URLs
  *
  * This loader runs:
  * - On initial page load
@@ -17,31 +17,45 @@ import Sidebar from "../components/Sidebar.jsx";
  * - When React Router revalidates (after mutations)
  */
 export async function clientLoader() {
-  // Simulate network delay (like calling an API)
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  // Get our API URL from environment variables
+  const apiUrl = import.meta.env.VITE_API_URL;
 
-  const url = `${supabaseUrl}/rest/v1/threads?select=*&order=created_at.desc`;
+  // Construct the API endpoint URL
+  // Our custom API handles sorting internally (ORDER BY created_at DESC)
+  const url = `${apiUrl}/api/threads`;
 
-  const response = await fetch(url, {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-    },
-  });
+  // Make the request to our custom API
+  // No special headers needed - our API is public for now
+  const response = await fetch(url);
 
+  // Check if the request was successful
   if (!response.ok) {
     throw new Error(`Failed to fetch threads: ${response.status}`);
   }
 
+  // Parse the JSON response
   const threads = await response.json();
 
   return { threads };
 }
 
+/**
+ * CLIENT ACTION FUNCTION
+ *
+ * Handles thread deletion requests.
+ * Key concepts:
+ * 1. INTENT PATTERN: Uses form field to identify the action type
+ * 2. DELETE REQUEST: Sends DELETE request to our custom API
+ * 3. CASCADE DELETE: Database automatically deletes related messages
+ * 4. AUTOMATIC REVALIDATION: Loader re-runs to refresh thread list
+ *
+ * The action runs:
+ * - When a Form with method="post" is submitted
+ * - Checks the "intent" field to determine the action
+ */
 export async function clientAction({ request }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  // Get our API URL from environment variables
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   // Extract form data
   const formData = await request.formData();
@@ -51,18 +65,11 @@ export async function clientAction({ request }) {
   // Handle delete intent
   if (intent === "delete" && threadId) {
     try {
-      // DELETE request to Supabase
+      // DELETE request to our custom API
       // Messages are automatically deleted due to CASCADE
-      const response = await fetch(
-        `${supabaseUrl}/rest/v1/threads?id=eq.${threadId}`,
-        {
-          method: "DELETE",
-          headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${supabaseKey}`,
-          },
-        },
-      );
+      const response = await fetch(`${apiUrl}/api/threads/${threadId}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         return { error: `Failed to delete thread: ${response.status}` };
@@ -80,13 +87,14 @@ export async function clientAction({ request }) {
 /**
  * Layout Component
  *
- * Now uses DATA LOADING instead of local state!
+ * Now uses DATA LOADING and MUTATIONS!
  *
  * Key concepts:
  * 1. useLoaderData() HOOK: Accesses data from clientLoader
  * 2. NO STATE MANAGEMENT: Data comes from loader, not useState
  * 3. LAYOUT PATTERN: Wraps child routes with consistent UI (sidebar)
  * 4. OUTLET: Renders the matched child route component
+ * 5. NO DELETE CALLBACK: Sidebar handles deletion with useFetcher
  */
 export default function Layout() {
   // Access threads data from the loader

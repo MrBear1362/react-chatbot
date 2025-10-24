@@ -57,12 +57,12 @@ function ChatMessages({ messages = [] }) {
  * ChatInput Component
  *
  * Form component that handles user input for sending messages.
- * Now demonstrates CALLBACK PROPS and UNCONTROLLED FORMS:
- * 1. PROPS DESTRUCTURING: Receiving callback function from parent
- * 2. CALLBACK PROPS: Using parent's function to update shared state
- * 3. UNCONTROLLED FORMS: Reading form data on submission
- * 4. FORM VALIDATION: Basic empty message validation
- * 5. STATE MANAGEMENT: Managing local isSubmitting state
+ * Now uses React Router Form for data mutations:
+ * 1. FORM COMPONENT: React Router's Form for seamless data mutations
+ * 2. METHOD="POST": Triggers the route's clientAction when submitted
+ * 3. AUTOMATIC REVALIDATION: Data refreshes after successful submission
+ * 4. NO STATE NEEDED: Form clears and data reloads automatically
+ * 5. DECLARATIVE: Just render the form, React Router handles the rest
  */
 function ChatInput() {
   return (
