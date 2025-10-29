@@ -9,8 +9,7 @@ import { ChatInput, ChatMessages } from "../components/Chat.jsx";
  * - Returns a redirect to navigate to the new thread
  */
 export async function clientAction({ request }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   // Extract form data
   const formData = await request.formData();
@@ -28,46 +27,30 @@ export async function clientAction({ request }) {
       : content.trim();
 
   try {
-    // Step 1: Create the thread
-    const threadResponse = await fetch(`${supabaseUrl}/rest/v1/threads`, {
+    const response = await fetch(`${apiUrl}/api/threads`, {
       method: "POST",
       headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation", // Need the created thread's ID
-      },
-      body: JSON.stringify({ title }),
-    });
-
-    if (!threadResponse.ok) {
-      return { error: `Failed to create thread: ${threadResponse.status}` };
-    }
-
-    // Get the created thread (returns array with one item)
-    const [thread] = await threadResponse.json();
-
-    // Step 2: Create the first message in the new thread
-    const messageResponse = await fetch(`${supabaseUrl}/rest/v1/messages`, {
-      method: "POST",
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        thread_id: thread.id,
-        type: "user",
+        title: title,
         content: content.trim(),
       }),
     });
 
-    if (!messageResponse.ok) {
-      return { error: `Failed to create message: ${messageResponse.status}` };
+    if (response.status === 400) {
+      const error = await response.json();
+      return { error: error.error || "Invalid thread data" };
     }
 
     // Step 3: Redirect to the new thread
-    return redirect(`/chat/${thread.id}`);
+    if (!response.ok) {
+      return { error: `Failed to create thread: ${response.status}` };
+    }
+
+    const data = await response.json();
+
+    return redirect(`/chat/${data.thread.id}`);
   } catch (error) {
     return { error: error.message };
   }
