@@ -4,14 +4,6 @@ import { ChatInput, ChatMessages } from "../components/Chat.jsx";
 /**
  * CLIENT ACTION FUNCTION
  *
- * Handles creation of new chat threads with their first message.
- * Key concepts:
- * 1. MULTIPLE MUTATIONS: Creates both thread and first message
- * 2. SEQUENTIAL OPERATIONS: Thread must be created before message
- * 3. REDIRECT: Navigate to new thread after successful creation
- * 4. TITLE GENERATION: Create thread title from first message
- * 5. ERROR HANDLING: Validate input and handle API errors
- *
  * The action runs:
  * - When a Form with method="post" is submitted
  * - Returns a redirect to navigate to the new thread
