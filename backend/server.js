@@ -314,6 +314,71 @@ app.delete("/api/threads/:id", async (req, res) => {
   }
 });
 
+/**
+ * PATCH /api/threads/:id
+ *
+ * Updates a thread's title.
+ * This is a partial update - only the title field is modified.
+ *
+ * SQL Concepts:
+ * - UPDATE statement: Modifies existing rows in a table
+ * - WHERE clause: Specifies which row(s) to update
+ * - RETURNING clause: Returns the updated row to confirm the change
+ * - Partial updates: Only specified columns are modified, others remain unchanged
+ *
+ * API Concepts:
+ * - PATCH vs PUT: PATCH updates specific fields, PUT replaces entire resource
+ * - 200 OK: Success status for updates (resource still exists at same URI)
+ * - 404 Not Found: Thread doesn't exist
+ * - 400 Bad Request: Invalid input data
+ * - Idempotency: Calling PATCH multiple times with same data has same effect
+ *
+ * HTTP Method Choice:
+ * We use PATCH because we're only updating the title field. If we were
+ * replacing the entire thread resource, we would use PUT instead.
+ */
+
+app.patch("/api/threads/:id", async (req, res) => {
+  try {
+    const threadId = req.params.id;
+
+    const { title } = req.body;
+
+    if (!title) {
+      return res.status(400).json({
+        error: "Title is required",
+      });
+    }
+
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length === 0) {
+      return res.status(400).json({
+        error: "Title cannot be empty",
+      });
+    }
+
+    const result = await sql`
+    UPDATE threads
+    SET title = ${trimmedTitle}
+    WHERE id = ${threadId}
+    RETURNING id, title, created_at
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found",
+      });
+    }
+
+    res.json(result[0]);
+  } catch (error) {
+    console.error("Error updating thread:", error);
+    res.status(500).json({
+      error: "failed to update thread",
+    });
+  }
+});
+
 // ========== Start the server ========== //
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
