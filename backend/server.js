@@ -225,6 +225,17 @@ app.post("/api/threads/:id/messages", requireAuth, async (req, res) => {
       });
     }
 
+    const threads = await sql`
+    SELECT id
+    FROM threads
+    WHERE id = ${threadId} AND user_id = ${req.userId}`;
+
+    if (threads.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found",
+      });
+    }
+
     // Insert the new message
     // RETURNING * gives us back the inserted row (including generated id and created_at)
     const messages = await sql`
@@ -302,7 +313,7 @@ app.delete("/api/threads/:id", requireAuth, async (req, res) => {
     // because of the ON DELETE CASCADE constraint on the messages table
     const result = await sql`
       DELETE FROM threads
-      WHERE id = ${threadId}
+      WHERE id = ${threadId} AND user_id = ${req.userId}
       RETURNING id
     `;
 
@@ -372,8 +383,8 @@ app.patch("/api/threads/:id", requireAuth, async (req, res) => {
     const result = await sql`
     UPDATE threads
     SET title = ${trimmedTitle}
-    WHERE id = ${threadId}
-    RETURNING id, title, created_at
+    WHERE id = ${threadId} AND user_id = ${req.userId}
+    RETURNING id, title, user_id, created_at
     `;
 
     if (result.length === 0) {
