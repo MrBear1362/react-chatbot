@@ -1,6 +1,7 @@
 import { Outlet, useLoaderData, redirect } from "react-router";
 import Sidebar from "../components/Sidebar.jsx";
 import { apiFetch } from "../lib/apiFetch.js";
+import { supabase } from "../lib/supabase.js";
 
 /**
  * CLIENT LOADER FUNCTION
@@ -49,10 +50,11 @@ export async function clientAction({ request }) {
   // Extract form data
   const formData = await request.formData();
   const intent = formData.get("intent");
-  const threadId = formData.get("threadId");
 
   // Handle delete intent
-  if (intent === "delete" && threadId) {
+  if (intent === "delete") {
+    const threadId = formData.get("threadId");
+
     try {
       // DELETE request to our custom API
       // Messages are automatically deleted due to CASCADE
@@ -68,6 +70,16 @@ export async function clientAction({ request }) {
     } catch (error) {
       return { error: error.message };
     }
+  }
+
+  if (intent === "logout") {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.log("Error signing out: ", error.message);
+    }
+
+    return redirect("/Login");
   }
 
   return null;
