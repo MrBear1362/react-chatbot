@@ -26,7 +26,8 @@ export async function apiFetch(path, options = {}) {
   });
 
   if (response.status === 401) {
-    throw redirect("/login");
+    const currentPath = window.location.pathname + window.location.search;
+    throw redirect(`/login?redirect=${encodeURIComponent(currentPath)}`);
   }
 
   return response;
