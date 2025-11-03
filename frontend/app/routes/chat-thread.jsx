@@ -4,6 +4,7 @@ import {
   Link,
   useRouteError,
   href,
+  Outlet,
 } from "react-router";
 import { ChatMessages, ChatInput } from "../components/Chat.jsx";
 
@@ -143,7 +144,7 @@ export async function clientAction({ params, request }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(newMessage),
-      }
+      },
     );
 
     // Check for validation errors (400)
@@ -185,8 +186,12 @@ export default function ChatThread() {
 
   return (
     <main className="chat-container">
+      <Outlet />
       <div className="chat-thread-header">
         <h2>{thread.title}</h2>
+        <Link to="edit" className="thread-title-edit-link">
+          Edit
+        </Link>
       </div>
       <ChatMessages messages={messages} />
       <ChatInput />
