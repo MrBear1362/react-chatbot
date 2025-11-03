@@ -103,9 +103,9 @@ app.get("/api/threads/:id", requireAuth, async (req, res) => {
     // Execute SQL query with WHERE clause
     // The ${threadId} is safely parameterized by the postgres library
     const threads = await sql`
-      SELECT id, title, created_at 
+      SELECT id, title, user_id, created_at 
       FROM threads 
-      WHERE id = ${threadId}
+      WHERE id = ${threadId} AND user_id = ${req.userId}
     `;
 
     // Check if thread was found
@@ -144,6 +144,16 @@ app.get("/api/threads/:id", requireAuth, async (req, res) => {
 app.get("/api/threads/:id/messages", requireAuth, async (req, res) => {
   try {
     const threadId = req.params.id;
+
+    const threads = await sql`
+      SELECT id 
+      FROM threads 
+      WHERE id = ${threadId} AND user_id = ${req.userId}
+    `;
+
+    if (threads.length === 0) {
+      return res.json([]);
+    }
 
     // Fetch all messages for this thread
     // Filter by thread_id foreign key and sort chronologically
