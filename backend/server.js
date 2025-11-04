@@ -33,6 +33,61 @@ app.get("/", (req, res) => {
   });
 });
 
+app.post("/api/test-mistral", async (req, res) => {
+  try {
+    const apiKey = process.env.MISTRAL_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        error:
+          "Mistral API key not configured. Please set MISTRAL_API_KEY in your .env file",
+      });
+    }
+
+    const mistralResponse = await fetch(
+      "https://api.mistral.ai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "mistral-small-latest",
+          messages: [
+            {
+              role: "user",
+              content: "Hello! Please respond with a short greeting.",
+            },
+          ],
+        }),
+      }
+    );
+
+    if (!mistralResponse.ok) {
+      const errorData = await mistralResponse.json();
+      console.error("Mistral API error:", errorData);
+      return res.status(mistralResponse.status).json({
+        error: "Failed to get response from Mistral API",
+        details: errorData,
+      });
+    }
+
+    const data = await mistralResponse.json();
+
+    res.json({
+      message: "Succesfully connected to Mistral API!",
+      response: data,
+    });
+  } catch (error) {
+    console.error("Error testing Mistral API:", error);
+    res.status(500).json({
+      error: "Failed to test Mistral API",
+      details: error.message,
+    });
+  }
+});
+
 /**
  * GET /api/threads
  *
